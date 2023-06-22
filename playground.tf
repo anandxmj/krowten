@@ -35,7 +35,8 @@ resource "aws_launch_template" "playground" {
   vpc_security_group_ids = [
     aws_security_group.playground.id
   ]
-  user_data = filebase64("files/userdata.script")
+  user_data = filebase64("files/userdata.sh")
+  
   tags = {
     Project = "krowten"
   }
@@ -50,12 +51,12 @@ resource "aws_autoscaling_group" "playground" {
   ]
   min_size = 1
   max_size = 5
+  desired_capacity = 2
   target_group_arns = [ aws_lb_target_group.playground.arn ]
   launch_template {
     id = aws_launch_template.playground.id
     version = aws_launch_template.playground.latest_version
   }
-  health_check_type = "ELB"
 }
 
 resource "aws_lb_target_group" "playground" {
@@ -72,6 +73,7 @@ resource "aws_lb" "playground" {
     aws_subnet.public-us-east-1e.id,
     aws_subnet.public-us-east-1f.id
   ]
+  security_groups = [ aws_security_group.playground.id ]
 }
 
 
