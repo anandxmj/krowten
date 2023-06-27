@@ -1,6 +1,6 @@
-resource "aws_internet_gateway" "igw" {
-  vpc_id = aws_vpc.krowten.id
-  tags = {
-    Project = "krowten"
-  }
-}
+# resource "aws_internet_gateway" "igw" {
+#   vpc_id = aws_vpc.krowten.id
+#   tags = {
+#     Project = "krowten"
+#   }
+# }

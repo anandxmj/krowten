@@ -1,4 +1,5 @@
-resource "aws_iam_role" "phantom" {
+resource "aws_iam_role" "cluster-role" {
+  name = "cluster-role"
   assume_role_policy = <<EOF
   {
     "Version": "2012-10-17",
@@ -15,13 +16,12 @@ resource "aws_iam_role" "phantom" {
     ]
   }
   EOF
-  
 }
 
 resource "aws_iam_policy_attachment" "phantom-eks-management" {
   name = "phantom-eks-management"
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
-  roles = [ aws_iam_role.phantom.id ]
+  roles = [ aws_iam_role.cluster-role.id ]
 }
 
 resource "aws_eks_cluster" "phantom" {
@@ -33,5 +33,5 @@ resource "aws_eks_cluster" "phantom" {
         aws_subnet.private-us-east-1c.id
     ]
   }
-  role_arn = aws_iam_role.phantom.arn
+  role_arn = aws_iam_role.cluster-role.arn
 }
