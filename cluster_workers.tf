@@ -68,6 +68,10 @@ resource "aws_security_group" "phantom-worker" {
   }
 }
 
+resource "aws_iam_instance_profile" "workers_profile" {
+  name = "workers_profile"
+  role = aws_iam_role.eksworker.name
+}
 resource "aws_launch_template" "phantom-worker" {
   name = "phantom-worker"
   image_id = "ami-022e1a32d3f742bd8"
@@ -75,6 +79,9 @@ resource "aws_launch_template" "phantom-worker" {
   vpc_security_group_ids = [
     aws_security_group.phantom-worker.id
   ]
+  iam_instance_profile {
+    name = aws_iam_instance_profile.workers_profile.name
+  }
   user_data = filebase64("files/userdata.sh")
   
   tags = {
@@ -82,22 +89,17 @@ resource "aws_launch_template" "phantom-worker" {
   }
 }
 
-resource "aws_eks_node_group" "phantom-workers" {
-  node_group_name = "phantom-workers"
-  node_role_arn = aws_iam_role.eksworker.arn
+resource "aws_autoscaling_group" "phantom-workers" {
+  name = "phantom-workers"
   launch_template {
     id = aws_launch_template.phantom-worker.id
-    version = aws_launch_template.phantom-worker.latest_version
   }
-  scaling_config {
-    min_size = 1
-    max_size = 5
-    desired_size = 2
-  }
-  cluster_name = aws_eks_cluster.phantom.name
-  subnet_ids = [ 
-    aws_subnet.private-us-east-1a.id,
-    aws_subnet.private-us-east-1b.id, 
+  min_size = 1
+  max_size = 5
+  desired_capacity = 2
+  vpc_zone_identifier = [
+    aws_subnet.private-us-east-1a.id,  
+    aws_subnet.private-us-east-1b.id,
     aws_subnet.private-us-east-1c.id
   ]
 }
